@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Canvas Cycle</title>
+    <link rel="stylesheet" href="stylesheet.css">
+    <script type="importmap">{ "imports": { "CanvasCycle": "./CanvasCycle.js" } }</script>
+    <script type="application/json">
+{
+    "scenes": [
+	{ "title": "Jungle Waterfall - Morning",   "src": "V08AM" },
+	{ "title": "Seascape - Day",               "src": "V29" },
+	{ "title": "Mountain Stream - Morning",    "src": "V19" },
+	{ "title": "Winter Forest - Snow",         "src": "V26SNOW" },
+	{ "title": "Jungle Waterfall - Rain",      "src": "V08RAIN" },
+	{ "title": "Mountain Storm - Day",         "src": "V14" },
+	{ "title": "Deep Forest - Day",            "src": "V30" },
+	{ "title": "Highland Ruins - Rain",        "src": "V04" },
+	{ "title": "Rough Seas - Day",             "src": "V07" },
+	{ "title": "Crystal Caves - Day",          "src": "V20" },
+	{ "title": "Haunted Castle Ruins - Rain",  "src": "V05RAIN" },
+	{ "title": "Jungle Waterfall - Night",     "src": "V08PM" },
+	{ "title": "Mirror Pond - Rain",           "src": "V16RAIN" },
+	{ "title": "Mountain Stream - Night",      "src": "V19AURA" },
+	{ "title": "Aquarius - Day",               "src": "CORAL" },
+	{ "title": "Harbor Town - Night",          "src": "V15" },
+	{ "title": "Deep Forest - Rain",           "src": "V30RAIN" },
+	{ "title": "Mountain Fortress - Dusk",     "src": "V02" },
+	{ "title": "Water City Gates - Fog",       "src": "V28" },
+	{ "title": "Seascape - Sunset",            "src": "V29PM" },
+	{ "title": "Mirror Pond - Morning",        "src": "V16" },
+	{ "title": "Island Fires - Dusk",          "src": "V01" },
+	{ "title": "Forest Edge - Day",            "src": "V09" },
+	{ "title": "Mirror Pond - Afternoon",      "src": "V16PM" },
+	{ "title": "Jungle Waterfall - Afternoon", "src": "V08" },
+	{ "title": "Swamp Cathedral - Day",        "src": "V03" },
+	{ "title": "Haunted Castle Ruins - Night", "src": "V05HAUNT" },
+	{ "title": "Deep Swamp - Day",             "src": "V10" },
+	{ "title": "Approaching Storm - Day",      "src": "V11AM" },
+	{ "title": "Pond Ripples - Dawn",          "src": "V13" },
+	{ "title": "Ice Wind - Day",               "src": "V17" },
+	{ "title": "Mountain Stream - Afternoon",  "src": "V19PM" },
+	{ "title": "Desert Heat Wave - Day",       "src": "V25HEAT" },
+	{ "title": "Magic Marsh Cave - Night",     "src": "V27" },
+	{ "title": "Seascape - Fog",               "src": "V29FOG" }
+    ]
+}
+    </script>
+    <script type="text/wgsl">
+struct VertexOut {
+  @builtin(position) position : vec4f,
+  @location(0) texcoord: vec2f,
+}
+
+@vertex
+fn vs(@builtin(vertex_index) vertexIndex: u32) -> VertexOut
+{  
+  let pos = array(
+    vec2f(1.0, 0.0),
+    vec2f(0.0, 1.0),
+    vec2f(0.0, 0.0),
+
+    vec2f(0.0, 1.0),
+    vec2f(1.0, 0.0),
+    vec2f(1.0, 1.0),
+  );
+  
+  var vsOut : VertexOut;
+
+  let xy = pos[vertexIndex];
+  
+  vsOut.position = vec4f(2 * xy - 1.0, 0.0, 1.0);
+  vsOut.texcoord = vec2f(xy.x, 1.0 - xy.y);;
+
+  return vsOut;
+}
+
+@group(0) @binding(0) var ourSampler: sampler;
+@group(0) @binding(1) var ourTexture: texture_2d<f32>;
+
+@fragment
+fn fs(fsInput: VertexOut) -> @location(0) vec4f
+{
+  return textureSample(ourTexture, ourSampler, fsInput.texcoord);
+}
+    </script>
+  </head>
+  <body>
+    <div></div>
+    <script type="module">
+      import CanvasCycle from "CanvasCycle";
+      const CC = await new CanvasCycle();
+      await CC.init();
+    </script>
+  </body>
+</html>
