@@ -83,7 +83,7 @@ class Palette
 
     cycle(timeNow, settings)
     {
-	Palette.COPY_COLORS(this.baseColors, this.colors);
+	Palette.copyColors(this.baseColors, this.colors);
 
 	if (!Palette.ENABLE_CYCLING)
 	    return;
@@ -110,15 +110,15 @@ class Palette
 		}
 		
 		if (reverse === 2)
-		    Palette.REVERSE_COLORS(this.colors, low, high);
+		    Palette.reverseColors(this.colors, low, high);
 		
 		if (Palette.USE_BLEND_SHIFT && blendShiftEnabled)
-		    Palette.BLEND_SHIFT_COLORS(this.colors, low, high, cycleAmount);
+		    Palette.blendShiftColors(this.colors, low, high, cycleAmount);
 		else
-		    Palette.SHIFT_COLORS(this.colors, low, high, cycleAmount);
+		    Palette.shiftColors(this.colors, low, high, cycleAmount);
 
 		if (reverse == 2)
-		    Palette.REVERSE_COLORS(this.colors, low, high);
+		    Palette.reverseColors(this.colors, low, high);
 	    }
 	}
     }
@@ -134,7 +134,7 @@ class Palette
 	}
     }
     
-    static COPY_COLORS(src, dst)
+    static copyColors(src, dst)
     {
 	for (let i = 0; i < src.length; i += 1) {
 	    if (!(dst[i] instanceof Color))
@@ -145,15 +145,15 @@ class Palette
 	}
     }
     
-    static REVERSE_COLORS(colors, low, high)
+    static reverseColors(colors, low, high)
     {
 	const cycleSize = (high - low) + 1;
 
 	for (let i = 0; i < cycleSize/2; i += 1)
-	    Palette.SWAP_COLORS(colors[low + i], colors[high - i]);
+	    Palette.swapColors(colors[low + i], colors[high - i]);
     }
     
-    static SHIFT_COLORS(colors, low, high, amount)
+    static shiftColors(colors, low, high, amount)
     {
 	for (let i = 0; i < Math.floor(amount); i += 1) {
 	    let temp = colors[high];
@@ -165,23 +165,23 @@ class Palette
 	}
     }
 	
-    static BLEND_SHIFT_COLORS(colors, low, high, amount)
+    static blendShiftColors(colors, low, high, amount)
     {
 	// shift colors using BlendShift (fade colors creating a smooth transition)
 	// BlendShift Technology conceived, designed and coded by Joseph Huckaby
 
-	Palette.SHIFT_COLORS(colors, low, high, amount);
+	Palette.shiftColors(colors, low, high, amount);
 
 	const frame = Math.floor((amount - Math.floor(amount)) * Palette.PRECISION);
 
 	let temp = colors[high];
 	for (let j = high - 1; j >= low; j -= 1)
-		colors[j + 1] = Palette.FADE_COLOR(colors[j + 1], colors[j], frame, Palette.PRECISION);
+		colors[j + 1] = Palette.fadeColor(colors[j + 1], colors[j], frame, Palette.PRECISION);
 
-	colors[low] = Palette.FADE_COLOR(colors[low], temp, frame, Palette.PRECISION);
+	colors[low] = Palette.fadeColor(colors[low], temp, frame, Palette.PRECISION);
     }
     
-    static FADE_COLOR(srcColor, dstColor, frame, max)
+    static fadeColor(srcColor, dstColor, frame, max)
     {
 	// fade one color into another by a partial amount, return new color in between
 
@@ -190,15 +190,15 @@ class Palette
 	if (frame > max) frame = max;
 
 	return new Color(
-	    Math.floor(srcColor.r + (((dstColor.r - srcColor.r) * frame) / max) ),
-	    Math.floor(srcColor.g + (((dstColor.g - srcColor.g) * frame) / max) ),
-	    Math.floor(srcColor.b + (((dstColor.b - srcColor.b) * frame) / max) )
+	    Math.floor(srcColor.r + (((dstColor.r - srcColor.r) * frame) / max)),
+	    Math.floor(srcColor.g + (((dstColor.g - srcColor.g) * frame) / max)),
+	    Math.floor(srcColor.b + (((dstColor.b - srcColor.b) * frame) / max))
 	);
     }
 
-    static SWAP_COLORS = (a, b) => (a, b = b, a);
-    
-    static DFLOAT_MOD = (a, b) => ((Math.floor(a*Palette.PRECISION) % Math.floor(b*Palette.PRECISION))/Palette.PRECISION);
+    static swapColors = (a, b) => (a, b = b, a);
+	
+    static DFLOAT_MOD = (a, b) => ((Math.floor(a*Palette.PRECISION) % Math.floor(b*Palette.PRECISION)) / Palette.PRECISION);
 }
 
 class Tween
@@ -586,8 +586,16 @@ export default class CanvasCycle
   
 	canvas.width = 640;
 	canvas.height = 480;
-
-	canvas.addEventListener("click", () => document.fullscreenElement ? document.exitFullscreen() : canvas.requestFullscreen());
+	canvas.addEventListener("click", async () => {
+	    if (document.fullscreenElement) {
+		document.exitFullscreen();
+	    } else {
+		canvas.requestFullscreen();
+		const [wakeLock] = await new Result(async () => {
+		    return await navigator.wakeLock.request("screen");
+		});
+	    }
+	});
 	
 	//container.appendChild(prev);
 	container.appendChild(canvas);
