@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>Canvas Cycle</title>
-    <link rel="stylesheet" href="stylesheet.css">
     <script type="importmap">{ "imports": { "CanvasCycle": "./CanvasCycle.js" } }</script>
     <script type="application/json">
 {
@@ -83,6 +82,45 @@ fn fs(fsInput: VertexOut) -> @location(0) vec4f
   return textureSample(ourTexture, ourSampler, fsInput.texcoord);
 }
     </script>
+    <style>
+html, body
+{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.container
+{
+    display: flex;
+
+    background: black;
+
+    justify-content: center;
+    align-items: center;
+
+    width: 100vw;
+    height: 100vh;
+}
+
+.overlay
+{
+    position: absolute;
+}
+
+.grid
+{
+    display: grid;
+}
+
+.grid div
+{
+    margin: 10px 10px;
+
+    color: white;
+}
+    </style>
   </head>
   <body>
     <div></div>
