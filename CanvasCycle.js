@@ -586,14 +586,26 @@ export default class CanvasCycle
   
 	canvas.width = 640;
 	canvas.height = 480;
+
+	let wakeLock = null;
+	
 	canvas.addEventListener("click", async () => {
 	    if (document.fullscreenElement) {
 		document.exitFullscreen();
+
+		await wakeLock.release();
+		
+		if (wakeLock != null) {
+		    wakeLock = null;
+		}
 	    } else {
 		canvas.requestFullscreen();
-		const [wakeLock] = await new Result(async () => {
+
+		const [res] = await new Result(async () => {
 		    return await navigator.wakeLock.request("screen");
 		});
+		
+		wakeLock = res;
 	    }
 	});
 	
