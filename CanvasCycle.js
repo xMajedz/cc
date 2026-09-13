@@ -413,6 +413,11 @@ export default class CanvasCycle
 
 	const tickCount = Math.floor(timestamp - timestart);
 
+	this.state = {
+	    tickCount: tickCount,
+	    timestamp: timestamp,
+	};
+
 	Tween.step(tickCount);
 
 	this.palette.cycle(tickCount, this.settings);
@@ -587,27 +592,33 @@ export default class CanvasCycle
 	canvas.width = 640;
 	canvas.height = 480;
 
-	let wakeLock = null;
-	
-	canvas.addEventListener("click", async () => {
+	const callbackOff = async (callbackOn, wakeLock) => {
 	    if (document.fullscreenElement) {
 		document.exitFullscreen();
-
-		await wakeLock.release();
-		
-		if (wakeLock != null) {
-		    wakeLock = null;
-		}
-	    } else {
-		canvas.requestFullscreen();
-
-		const [res] = await new Result(async () => {
-		    return await navigator.wakeLock.request("screen");
-		});
-		
-		wakeLock = res;
 	    }
-	});
+	    
+	    await wakeLock.release();
+
+	    canvas.addEventListener("click", () => {
+		callbackOn();
+	    }, { once: true });
+	};
+	    
+	const callbackOn = async () => {
+	    canvas.requestFullscreen();
+	    
+	    const [wakeLock] = await new Result(async () => {
+		return await navigator.wakeLock.request("screen");
+	    });
+
+	    canvas.addEventListener("click", () => {
+		callbackOff(callbackOn, wakeLock);
+	    }, { once: true });
+
+	    console.log(this.state);
+	};
+
+	canvas.addEventListener("click", callbackOn, { once: true });
 	
 	//container.appendChild(prev);
 	container.appendChild(canvas);
